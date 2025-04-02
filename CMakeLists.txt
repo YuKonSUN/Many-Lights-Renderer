@@ -6,12 +6,13 @@ set(NAME HEngine)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(${NAME} LANGUAGES CXX)
+project(${NAME} LANGUAGES C CXX)
 
 include_directories(Engine/3rdparty)
 include_directories(Engine/3rdparty/glm)
 include_directories(Engine/3rdparty/imgui)
 include_directories(Engine/3rdparty/tinygltf)
+include_directories(Engine/3rdparty/tinyobj)
 include_directories(Engine/3rdparty/ktx/include)
 include_directories(Engine/3rdparty/ktx/other_include)
 
@@ -40,16 +41,57 @@ IF (NOT Vulkan_FOUND)
     MESSAGE(FATAL_ERROR "Vulkan library not found")
 ENDIF()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX -D_USE_MATH_DEFINES")
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
 file(GLOB_RECURSE SOURCE_FILES "Engine/source/**/*.cpp" "Engine/source/*.cpp")
+file(GLOB_RECURSE IMGUI_FILES "Engine/3rdparty/imgui/*.cpp")
+
 
 # 设置程序的工作目录
-add_executable(${NAME} ${SOURCE_FILES})
+
 
 # set_target_properties(${NAME} PROPERTIES
 # 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 # 	# RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}
 # 	# RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}
 # )
+# target_include_directories(ktx PUBLIC
+#     ${CMAKE_SOURCE_DIR}/Engine/3rdparty/ktx/include
+#     ${CMAKE_SOURCE_DIR}/Engine/3rdparty/ktx/other_include
+# )
+# 查找zlib依赖
+# find_package(ZLIB REQUIRED)
+set(KTX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Engine/3rdparty/ktx)
+set(KTX_SOURCES
+    ${KTX_DIR}/lib/texture.c 
+    ${KTX_DIR}/lib/hashlist.c
+    ${KTX_DIR}/lib/checkheader.c
+    ${KTX_DIR}/lib/swap.c
+    ${KTX_DIR}/lib/memstream.c
+    ${KTX_DIR}/lib/filestream.c)
+
+
+
+add_library(ktx STATIC ${KTX_SOURCES})
+
+# set_target_properties(ktx PROPERTIES
+#     C_STANDARD 11  # 强制C11标准
+#     CXX_STANDARD 17
+# )
+
+target_include_directories(ktx PUBLIC
+	${KTX_DIR}/include
+	${KTX_DIR}/other_include
+)
+
+if(WIN32)
+    target_link_libraries(ktx ${Vulkan_LIBRARY} ${WINLIBS})
+ else(WIN32)
+    target_link_libraries(ktx ${Vulkan_LIBRARY} ${XCB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+endif(WIN32)
+
+add_executable(${NAME} ${SOURCE_FILES} ${IMGUI_FILES})
 
 target_link_directories(${NAME} PUBLIC ${CMAKE_SOURCE_DIR}/bin/vulkan ${CMAKE_SOURCE_DIR}/bin/glfw) 
-target_link_libraries(${NAME} ${Vulkan_LIBRARY} glfw3)
+target_link_libraries(${NAME} ${Vulkan_LIBRARY} ${WINLIBS} glfw3 ktx)

@@ -1,5 +1,6 @@
 #include "guid.h"
 #include <cassert>
+#include <cstdint>
 
 Guid::Guid()
 {

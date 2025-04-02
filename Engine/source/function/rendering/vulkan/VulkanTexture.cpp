@@ -7,6 +7,7 @@
  */
 
 #include "VulkanTexture.h"
+#include <algorithm> // Required for std::max
 
 namespace vks
 {

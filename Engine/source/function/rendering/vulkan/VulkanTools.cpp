@@ -313,7 +313,7 @@ namespace vks
 			if (!errorModeSilent)
 			{
 				std::wstring wmessage(message.begin(), message.end());
-				MessageBox(NULL, wmessage.c_str(), NULL, MB_OK | MB_ICONERROR);
+				MessageBoxW(NULL, wmessage.c_str(), NULL, MB_OK | MB_ICONERROR);
 			}
 #elif defined(__ANDROID__)
 			LOGE("Fatal error: %s", message.c_str());

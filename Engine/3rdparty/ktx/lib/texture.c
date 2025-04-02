@@ -228,7 +228,7 @@ ktxTextureInt_construct(ktxTextureInt* This, ktxTextureCreateInfo* createInfo,
     ktxHashList_Construct(&super->kvDataHead);
     if (storageAllocation == KTX_TEXTURE_CREATE_ALLOC_STORAGE) {
         super->dataSize = ktxTexture_calcDataSize(super);
-        super->pData = malloc(super->dataSize);
+        super->pData = (ktx_uint8_t*)malloc(super->dataSize);
         if (super->pData == NULL)
             return KTX_OUT_OF_MEMORY;
     }
@@ -354,7 +354,7 @@ ktxTextureInt_constructFromStream(ktxTextureInt* This,
             ktx_uint32_t kvdLen = header.bytesOfKeyValueData;
             ktx_uint8_t* pKvd;
 
-            pKvd = malloc(kvdLen);
+            pKvd = (ktx_uint8_t*)malloc(kvdLen);
             if (pKvd == NULL)
                 return KTX_OUT_OF_MEMORY;
             
@@ -943,7 +943,7 @@ ktxTexture_LoadImageData(ktxTexture* This,
         return KTX_INVALID_OPERATION;
 
     if (pBuffer == NULL) {
-        This->pData = malloc(This->dataSize);
+        This->pData = (ktx_uint8_t*)malloc(This->dataSize);
         if (This->pData == NULL)
             return KTX_OUT_OF_MEMORY;
         pDest = This->pData;
